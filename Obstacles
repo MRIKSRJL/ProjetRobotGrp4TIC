@@ -1,0 +1,56 @@
+#include <msp430.h>
+#include "ADC.h"
+
+// --- TES REGLAGES ---
+// A ajuster selon ton branchement physique (regarde le connecteur vert)
+#define CANAL_SHARP     0   // Si branché sur P1.0
+#define SEUIL_OBSTACLE  600  // Ta valeur trouvée lors de la calibration
+
+// --- TA FONCTION SPECIALE (C'est ça que l'Architecte va adorer) ---
+// En créant une fonction, tu rends ton code "copiable" pour l'assemblage final
+void Gestion_Obstacle_Sacha()
+{
+    // 1. Lire la distance
+    ADC_Demarrer_conversion(CANAL_SHARP);
+    int distance = ADC_Lire_resultat();
+
+    // 2. Vérifier si obstacle
+    if (distance > SEUIL_OBSTACLE)
+    {
+        // CAS DANGER : On arrête tout !
+
+        // TODO: Mettre ici les commandes moteurs pour STOP (ex: Moteur_G(0);)
+
+        // Boucle d'attente : On reste bloqué ici tant que l'obstacle est là
+        while (distance > SEUIL_OBSTACLE)
+        {
+            // On revérifie en permanence
+            ADC_Demarrer_conversion(CANAL_SHARP);
+            distance = ADC_Lire_resultat();
+
+            __delay_cycles(100000); // Petite pause pour ne pas surchauffer
+        }
+
+        // L'obstacle est parti, on laisse la fonction se terminer
+        // et le programme retournera au suivi de ligne.
+    }
+}
+
+// --- LE PROGRAMME PRINCIPAL ---
+int main(void)
+{
+    WDTCTL = WDTPW | WDTHOLD; // Stop watchdog
+    ADC_init();               // Démarrage du pilote ADC
+
+    while(1) // Boucle infinie
+    {
+        // A chaque tour de boucle, le robot se demande : "Y a-t-il un obstacle ?"
+        Gestion_Obstacle_Sacha();
+
+        // Si pas d'obstacle, il continue sa vie (ici tu ajouteras le suivi de ligne plus tard)
+    }
+
+    return 0;
+}
+
+
