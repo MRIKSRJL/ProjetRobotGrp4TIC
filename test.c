@@ -155,7 +155,7 @@ void check_boot(void) {
 }
 
 /* --- ä¸»ç¨‹åº�å…¥å�£ --- */
-int main_test(void) {
+int main25(void) {
     WDTCTL = WDTPW | WDTHOLD;
 
     init_all_hw();
